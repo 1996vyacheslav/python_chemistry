@@ -18,14 +18,13 @@ class Newton:
 
 
 class RFO:
-    def __init__(self):
-        pass
+    def __init__(self, eig_number):
+        self.eig_number = eig_number
 
     def __call__(self, grad, hess, **kwargs):
         grad = np.expand_dims(grad, -1)
-        matr = np.block([[hess, grad],
-                         [grad.T, 0]])
+        matr = np.block([[hess, grad], [grad.T, 0]])
 
         w, v = np.linalg.eigh(matr)
 
-        return (v[:-1, 0] / v[-1, 0]).ravel()
+        return (v[:-1, self.eig_number] / v[-1, self.eig_number]).ravel()

@@ -14,7 +14,7 @@ molecule = functions.Molecule([1, 1, 8], 3, 750)
 optimizer = GradientDescent(delta_strategies.FollowGradient(), stop_strategies.GradNorm(1e-5))
 path = optimizer(molecule, eq)
 
-print(utils.io.to_chemcraft_format(charges, eq))
+print(utils.io.to_chemcraft_struct(charges, eq))
 
 eq = path[-1]
 molecule.grad(eq)

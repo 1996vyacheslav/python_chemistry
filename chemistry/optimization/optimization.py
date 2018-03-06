@@ -1,6 +1,48 @@
 import numpy as np
 import itertools
-from chemistry.functions import PolarCoordsWithDirection
+
+from chemistry.functions import PolarCoordsWithDirection, GaussianException
+from chemistry.utils import linalg
+
+
+def optimize_structure_rfo(molecule, struct, rfo, stop_strategy):
+    path = []
+    zero = np.zeros(molecule.n_dims - 6)
+
+    for itr in itertools.count():
+        path.append(struct)
+
+        motionless = linalg.get_motionless(molecule, struct)
+        value, grad, hess = motionless.value_grad_hess(zero)
+
+        delta = rfo(itr=itr, x=zero, val=value, grad=grad, hess=hess)
+        print('\n\nnew iteration\nvalue = {}, grad norm = {}, delta norm = {}'.format(value, np.linalg.norm(grad), np.linalg.norm(delta)))
+        print('delta norm = {} [{}]'.format(np.linalg.norm(delta), delta))
+
+        if stop_strategy(itr=iter, x=zero, val=value, grad=grad, hess=hess, delta=delta):
+            print('break')
+            break
+
+        while True:
+            try:
+                next_value = motionless(delta)
+                expected = grad.dot(delta) + .5 * delta.dot(hess.dot(delta))
+                real = next_value - value
+
+                print('delta norm = {} [{}]'.format(np.linalg.norm(delta), delta))
+                print('expected = {}, real = {}, d = {}'.format(expected, real, abs(expected - real) / abs(expected)))
+                print()
+                if abs(expected - real) / abs(expected) < .3:
+                    break
+            except GaussianException as exc:
+                print('exception => decreasing delta')
+
+            delta *= .5
+
+        struct = motionless.transform(delta)
+
+    return path
+
 
 
 def optimize_on_sphere(func, r, dir, delta_strategy, stop_strategy):
@@ -47,10 +89,7 @@ def optimize_on_sphere(func, r, dir, delta_strategy, stop_strategy):
     return path, skips1, skips2
 
 
-def optimize_on_sphere2(func, r, dir, stop_strategy, critical_delta=1e-6):
-    from chemistry.optimization.delta_strategies import RFO
-    delta_strategy = RFO()
-
+def optimize_on_sphere_rfo(func, r, dir, rfo, stop_strategy):
     path = []
 
     phi = np.zeros(func.n_dims - 1)
@@ -61,10 +100,10 @@ def optimize_on_sphere2(func, r, dir, stop_strategy, critical_delta=1e-6):
         in_polar = PolarCoordsWithDirection(func, r, dir)
         value, grad, hess = in_polar.value_grad_hess(phi)
 
-        delta = delta_strategy(itr=itr, x=phi, val=value, grad=grad, hess=hess)
+        delta = rfo(itr=itr, x=phi, val=value, grad=grad, hess=hess)
         print('\n\nnew iteration\nvalue = {}, grad norm = {}, delta norm = {}'.format(value, dir, np.linalg.norm(grad), np.linalg.norm(delta)))
 
-        if stop_strategy(itr=iter, x=phi, val=value, grad=grad, delta=delta):
+        if stop_strategy(itr=iter, x=phi, val=value, grad=grad, delta=delta, hess=hess):
             break
 
         while True:
@@ -83,4 +122,5 @@ def optimize_on_sphere2(func, r, dir, stop_strategy, critical_delta=1e-6):
         dir = in_polar.transform(delta)
 
     return path
+
 

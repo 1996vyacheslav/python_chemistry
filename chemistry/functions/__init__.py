@@ -1,2 +1,2 @@
-from .gaussian_wrapper import GaussianWrapper, Molecule
+from .gaussian_wrapper import GaussianWrapper, GaussianException, Molecule
 from .transformations import *

@@ -2,6 +2,7 @@ import os
 import threading
 import pathlib
 from chemistry.functions.transformations import BaseFunction
+from chemistry.utils import io
 import numpy as np
 
 
@@ -119,6 +120,15 @@ class Molecule(BaseFunction):
 
     def value_grad_hess(self, x):
         return self.gaussian.value_grad_hess(self.charges, x)
+
+    def save_chemcraft_struct(self, file_path, struct):
+        with open(file_path, 'w') as f:
+            f.write(io.to_chemcraft_struct(self.charges, struct))
+
+    def save_chemcraft_path(self, file_path, path):
+        with open(file_path, 'w') as f:
+            for struct in path:
+                f.write(io.to_chemcraft_struct(self.charges, struct))
 
 
 if __name__ == '__main__':
