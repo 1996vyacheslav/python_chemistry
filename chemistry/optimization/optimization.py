@@ -89,7 +89,7 @@ def optimize_on_sphere(func, r, dir, delta_strategy, stop_strategy):
     return path, skips1, skips2
 
 
-def optimize_on_sphere_rfo(func, r, dir, rfo, stop_strategy):
+def optimize_on_sphere_rfo(func, r, dir, rfo, stop_strategy, comp_eps=1e-9):
     path = []
 
     phi = np.zeros(func.n_dims - 1)
@@ -115,7 +115,7 @@ def optimize_on_sphere_rfo(func, r, dir, rfo, stop_strategy):
             print('delta norm = {}'.format(np.linalg.norm(delta)))
             print('expected = {}, real = {}, d = {}'.format(expected, real, abs(expected - real) / abs(expected)))
             print()
-            if abs(expected - real) / abs(expected) < .3:
+            if abs(expected - real) < comp_eps or abs(expected - real) / abs(expected) < .3:
                 break
             delta *= .5
 
