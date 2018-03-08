@@ -101,7 +101,7 @@ def optimize_on_sphere_rfo(func, r, dir, rfo, stop_strategy, comp_eps=1e-9):
         value, grad, hess = in_polar.value_grad_hess(phi)
 
         delta = rfo(itr=itr, x=phi, val=value, grad=grad, hess=hess)
-        print('\n\nnew iteration\nvalue = {}, grad norm = {}, delta norm = {}'.format(value, dir, np.linalg.norm(grad), np.linalg.norm(delta)))
+        print('\n\nnew iteration\nvalue = {}, grad norm = {}, delta norm = {}'.format(value, np.linalg.norm(grad), np.linalg.norm(delta)))
 
         if stop_strategy(itr=iter, x=phi, val=value, grad=grad, delta=delta, hess=hess):
             break

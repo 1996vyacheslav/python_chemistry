@@ -130,6 +130,12 @@ class Molecule(BaseFunction):
             for struct in path:
                 f.write(io.to_chemcraft_struct(self.charges, struct))
 
+    @staticmethod
+    def load_chemcraft_file(file_path):
+        with open(file_path, 'r') as f:
+            charges, struct = io.from_chemcraft_struct(f.read())
+        return Molecule(charges), struct
+
 
 if __name__ == '__main__':
     import time
