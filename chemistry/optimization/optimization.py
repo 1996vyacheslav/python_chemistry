@@ -1,5 +1,6 @@
-import numpy as np
+import logging
 import itertools
+import numpy as np
 
 from chemistry.functions import PolarCoordsWithDirection, GaussianException
 from chemistry.utils import linalg
@@ -91,7 +92,6 @@ def optimize_on_sphere(func, r, dir, delta_strategy, stop_strategy):
 
 def optimize_on_sphere_rfo(func, r, dir, rfo, stop_strategy, comp_eps=1e-9):
     path = []
-
     phi = np.zeros(func.n_dims - 1)
 
     for itr in itertools.count():
@@ -100,8 +100,17 @@ def optimize_on_sphere_rfo(func, r, dir, rfo, stop_strategy, comp_eps=1e-9):
         in_polar = PolarCoordsWithDirection(func, r, dir)
         value, grad, hess = in_polar.value_grad_hess(phi)
 
+        import matplotlib.pyplot as plt
+        plt.imshow(np.abs(hess), cmap='hot', interpolation='nearest')
+        plt.show()
+
         delta = rfo(itr=itr, x=phi, val=value, grad=grad, hess=hess)
-        print('\n\nnew iteration\nvalue = {}, grad norm = {}, delta norm = {}'.format(value, np.linalg.norm(grad), np.linalg.norm(delta)))
+        logging.debug('new iteration\nvalue = {}, grad norm = {}, delta norm = {}\nhess values:\n{}'.format(
+            value, np.linalg.norm(grad), np.linalg.norm(delta), linalg.calc_singular_values(hess)
+        ))
+        logging.debug('new iteration\nvalue = {}, grad norm = {}, delta norm = {}'.format(
+            value, np.linalg.norm(grad), np.linalg.norm(delta)
+        ))
 
         if stop_strategy(itr=iter, x=phi, val=value, grad=grad, delta=delta, hess=hess):
             break
@@ -112,10 +121,11 @@ def optimize_on_sphere_rfo(func, r, dir, rfo, stop_strategy, comp_eps=1e-9):
             expected = grad.dot(delta) + .5 * delta.dot(hess.dot(delta))
             real = next_value - value
 
-            print('delta norm = {}'.format(np.linalg.norm(delta)))
-            print('expected = {}, real = {}, d = {}'.format(expected, real, abs(expected - real) / abs(expected)))
-            print()
-            if abs(expected - real) < comp_eps or abs(expected - real) / abs(expected) < .3:
+            d = abs(expected - real) / abs(expected)
+            logging.debug('delta norm = {}, expected = {}, real = {}, d = {}'.format(
+                np.linalg.norm(delta), expected, real, d
+            ))
+            if abs(expected - real) < comp_eps or d < .3:
                 break
             delta *= .5
 

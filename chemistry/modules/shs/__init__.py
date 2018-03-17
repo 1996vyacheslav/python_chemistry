@@ -1,1 +1,1 @@
-from .shs import shs
+from .shs import shs, search_for_initial_directions

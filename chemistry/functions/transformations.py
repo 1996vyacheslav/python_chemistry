@@ -87,6 +87,9 @@ class AffineTransformation(CoordTransformation):
     def transform(self, x):
         return self.basis.dot(x) + self.delta
 
+    def back_transform(self, y):
+        return np.linalg.lstsq(self.basis, y - self.delta)[0]
+
     def _first_order(self, x):
         return self.basis.T
 
@@ -266,22 +269,27 @@ if __name__ == '__main__':
 
     np.random.seed(19)
 
-    # ModelFunction <- AffineTransformation
-    func = ModelFunction(3)
-    func = AffineTransformation(func, np.random.randn(func.n_dims), np.random.randn(func.n_dims, func.n_dims))
-    test_function_grad(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
-    test_function_hess(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
-
-    # ModelFunction <- AffineTransformation <- PolarCoords
-    func = ModelFunction(5)
-    func = AffineTransformation(func, np.random.randn(func.n_dims), np.random.randn(func.n_dims, func.n_dims))
-    func = PolarCoords(func, sqrt(2))
-    test_function_grad(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
-    test_function_hess(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
+    # # ModelFunction <- AffineTransformation
+    # func = ModelFunction(3)
+    # func = AffineTransformation(func, np.random.randn(func.n_dims), np.random.randn(func.n_dims, func.n_dims))
+    # test_function_grad(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
+    # test_function_hess(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
+    #
+    # # ModelFunction <- AffineTransformation <- PolarCoords
+    # func = ModelFunction(5)
+    # func = AffineTransformation(func, np.random.randn(func.n_dims), np.random.randn(func.n_dims, func.n_dims))
+    # func = PolarCoords(func, sqrt(2))
+    # test_function_grad(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
+    # test_function_hess(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
 
     # ModelFunction <- AffineTransformation <- PolarCoordsWithDirection
-    func = ModelFunction(5)
+    func = ModelFunction(15)
     func = AffineTransformation(func, np.random.randn(func.n_dims), np.random.randn(func.n_dims, func.n_dims))
-    func = PolarCoordsWithDirection(func, .3, np.random.randn(func.n_dims))
-    test_function_grad(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
-    test_function_hess(func, -np.ones(func.n_dims), np.ones(func.n_dims), 10)
+    # func = PolarCoordsWithDirection(func, .3, np.random.randn(func.n_dims))
+    func = PolarCoordsWithDirection(func, .3, linalg.eye(func.n_dims, 1))
+    test_function_grad(func, -np.ones(func.n_dims), np.ones(func.n_dims), 1000)
+    test_function_hess(func, -np.ones(func.n_dims), np.ones(func.n_dims), 1000)
+    test_function_grad(func, -np.zeros(func.n_dims), np.zeros(func.n_dims), 1000)
+    test_function_hess(func, -np.zeros(func.n_dims), np.zeros(func.n_dims), 1000)
+
+    print('!')

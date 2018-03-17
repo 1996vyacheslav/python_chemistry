@@ -24,6 +24,11 @@ def construct_rotation_matrix(u, v, alpha=None):
 
     A = (np.outer(v, u) - np.outer(u, v))
     B = (np.outer(u, u) + np.outer(v, v))
+
+    import matplotlib.pyplot as plt
+    plt.imshow(np.abs(np.identity(len(u)) + sin(alpha) * A + (cos(alpha) - 1) * B), cmap='hot', interpolation='nearest')
+    plt.show()
+
     return np.identity(len(u)) + sin(alpha) * A + (cos(alpha) - 1) * B
 
 
@@ -79,6 +84,14 @@ def get_normal_coordinate(func, struct):
 def calc_singular_values(matr):
     u, s, vh = np.linalg.svd(matr)
     return np.diagonal(u.T.dot(matr).dot(u))
+
+
+class RandomProjector:
+    def __init__(self, from_dims, to_dims):
+        self.projection_matrix = np.random.randn(to_dims, from_dims)
+
+    def project(self, x):
+        return self.projection_matrix.dot(x)
 
 
 if __name__ == '__main__':

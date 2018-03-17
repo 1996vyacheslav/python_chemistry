@@ -127,8 +127,8 @@ class Molecule(BaseFunction):
 
     def save_chemcraft_path(self, file_path, path):
         with open(file_path, 'w') as f:
-            for struct in path:
-                f.write(io.to_chemcraft_struct(self.charges, struct))
+            for i, struct in enumerate(path):
+                f.write(io.to_chemcraft_struct(self.charges, struct, str(i)))
 
     @staticmethod
     def load_chemcraft_file(file_path):
